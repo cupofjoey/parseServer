@@ -15,32 +15,45 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
+        /*
+        let user = PFObject(className: "Users")
         
-        let testObject = PFObject(className: "TestObject2")
-        
-        testObject["foo"] = "bar"
-        
-        testObject.saveInBackground { (success, error) -> Void in
-            
-            // added test for success 11th July 2016
-            
+        user["name"] = "Joe"
+        user.saveInBackground { (success, error) -> Void in
             if success {
-                
                 print("Object has been saved.")
-                
             } else {
-                
                 if error != nil {
-                    
                     print(error)
-                    
                 } else {
-                    
                     print ("Error")
                 }
                 
             }
             
+        }
+        */
+        
+        let query = PFQuery(className: "Users")
+        
+        query.getObjectInBackground(withId: "rFajeCRf01") { (object, error) in
+            
+            if error != nil {
+                print (error)
+            } else {
+                if let user = object {
+                    user["name"] = "Joe Joe"
+                    
+                    user.saveInBackground(block: { (success, error) in
+                        if success {
+                            
+                            print("Saved")
+                        } else {
+                            print("Error")
+                        }
+                    })
+                }
+            }
         }
         
     }
