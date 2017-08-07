@@ -167,6 +167,8 @@ class ViewController: UIViewController {
             
         }
         
+        self.navigationController?.navigationBar.isHidden = true
+        
     }
     
     override func viewDidLoad() {
