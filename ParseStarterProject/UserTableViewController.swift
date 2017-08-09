@@ -14,6 +14,8 @@ class UserTableViewController: UITableViewController {
     var usernames = [""]
     var userIDs = [""]
     var isFollowing = ["": true]
+    
+    var refresher: UIRefreshControl!
 
     @IBAction func logout(_ sender: AnyObject) {
         
@@ -28,14 +30,7 @@ class UserTableViewController: UITableViewController {
         self.navigationController?.navigationBar.isHidden = false
     }
     
-    override func viewDidLoad() {
-        super.viewDidLoad()
-
-        // Uncomment the following line to preserve selection between presentations
-        // self.clearsSelectionOnViewWillAppear = false
-
-        // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-        // self.navigationItem.rightBarButtonItem = self.editButtonItem()
+    func refresh () {
         
         let query = PFUser.query()
         
@@ -57,51 +52,76 @@ class UserTableViewController: UITableViewController {
                         
                         if user.objectId != PFUser.current()?.objectId {
                             
-                        
-                        let usernameArray = user.username!.components(separatedBy: "@")
-                        
-                        self.usernames.append(usernameArray[0])
-                        self.userIDs.append(user.objectId!)
-                        
-                        let query = PFQuery(className: "Followers")
-                        
-                        query.whereKey("follower", equalTo: (PFUser.current()?.objectId)!)
-                        query.whereKey("following", equalTo: user.objectId!)
-                        
-                        query.findObjectsInBackground(block: { (objects, error) in
                             
-                            if let objects = objects {
+                            let usernameArray = user.username!.components(separatedBy: "@")
+                            
+                            self.usernames.append(usernameArray[0])
+                            self.userIDs.append(user.objectId!)
+                            
+                            let query = PFQuery(className: "Followers")
+                            
+                            query.whereKey("follower", equalTo: (PFUser.current()?.objectId)!)
+                            query.whereKey("following", equalTo: user.objectId!)
+                            
+                            query.findObjectsInBackground(block: { (objects, error) in
                                 
-                                if objects.count > 0 {
+                                if let objects = objects {
                                     
-                                    self.isFollowing[user.objectId!] = true
+                                    if objects.count > 0 {
+                                        
+                                        self.isFollowing[user.objectId!] = true
+                                        
+                                        
+                                    } else {
+                                        
+                                        self.isFollowing[user.objectId!] = false
+                                        
+                                    }
                                     
-                                    
-                                } else {
-                                    
-                                    self.isFollowing[user.objectId!] = false
+                                    if self.isFollowing.count == self.usernames.count {
+                                        
+                                        self.tableView.reloadData()
+                                        
+                                        self.refresher.endRefreshing()
+                                        
+                                    }
                                     
                                 }
                                 
-                                if self.isFollowing.count == self.usernames.count {
-                                    
-                                    self.tableView.reloadData()
-                                    
-                                }
-                                
-                            }
+                            })
                             
-                        })
+                        }
                         
                     }
                     
                 }
-                    
-            }
                 
-        }
+            }
             
-    })
+        })
+        
+    }
+
+    
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+
+        // Uncomment the following line to preserve selection between presentations
+        // self.clearsSelectionOnViewWillAppear = false
+
+        // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
+        // self.navigationItem.rightBarButtonItem = self.editButtonItem()
+        
+        refresh()
+        
+        refresher = UIRefreshControl()
+        
+        refresher.attributedTitle = NSAttributedString(string: "Pull to Refresh")
+        
+        refresher.addTarget(self, action: #selector(UserTableViewController.refresh), for: UIControlEvents.valueChanged)
+        
+        tableView.addSubview(refresher)
         
 }
 
